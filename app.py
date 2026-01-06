@@ -4,8 +4,8 @@ import numpy as np
 from datetime import datetime
 import io
 
-# Configuración de la página (Título en la pestaña del navegador)
-st.set_page_config(page_title="Ruedas y visión de Claridad", layout="centered")
+# Configuración de la página
+st.set_page_config(page_title="App de Diagnóstico Estratégico", layout="centered")
 
 # 1. DATOS DE LAS RUEDAS
 ruedas_data = {
@@ -20,38 +20,41 @@ ruedas_data = {
     "2.8 DIVERSIÓN (Ocio)": ["Tiempo Disfrute", "Desconexión", "Placer Real", "Creatividad", "Risa/Juego", "Variedad", "Cambio Entorno", "Permiso/Culpa"]
 }
 
-# 2. INTERFAZ DE USUARIO (Sidebar)
-st.title("Sistema de Diagnóstico de 64 Vectores
-")
-st.markdown("---")
+# 2. INTERFAZ PROFESIONAL
+st.write("# 📊 Sistema de Diagnóstico de 64 Vectores")
+st.info("Herramienta profesional para procesos de Claridad Estratégica.")
 
-col1, col2 = st.columns(2)
-with col1:
-    nombre = st.text_input("Nombre:", placeholder="Tu nombre aquí")
-with col2:
-    area_seleccionada = st.selectbox("Área a evaluar:", list(ruedas_data.keys()))
+with st.expander("📝 Datos del Informe", expanded=True):
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        nombre = st.text_input("Nombre del Cliente:", placeholder="Ej: Juan Pérez")
+    with col2:
+        coach = st.text_input("Coach Responsable:", placeholder="Tu nombre o marca")
+    with col3:
+        area_seleccionada = st.selectbox("Área a evaluar:", list(ruedas_data.keys()))
 
-st.write(f"### Evalúa los vectores de: {area_seleccionada}")
+st.divider()
 
-# 3. GENERACIÓN DE SLIDERS DINÁMICOS
+# 3. SLIDERS DINÁMICOS
+st.write(f"### Puntuación de Vectores: {area_seleccionada}")
 valores = []
 vectores = ruedas_data[area_seleccionada]
 
-# Creamos columnas para que los sliders no ocupen tanto espacio vertical
 c1, c2 = st.columns(2)
 for i, v in enumerate(vectores):
     with (c1 if i % 2 == 0 else c2):
-        val = st.slider(v, 1, 10, 5, key=v)
+        val = st.slider(v, 1, 10, 5, key=f"slider_{v}")
         valores.append(val)
 
 # 4. LÓGICA DEL GRÁFICO
-if st.button("GENERAR DIAGNÓSTICO", type="primary"):
+if st.button("🚀 GENERAR REPORTE PARA CLIENTE", type="primary", use_container_width=True):
     N = len(vectores)
     angulos = [n / float(N) * 2 * np.pi for n in range(N)]
     valores_plot = valores + [valores[0]]
     angulos_plot = angulos + [angulos[0]]
     fecha = datetime.now().strftime("%d-%m-%Y")
 
+    # Ajuste de tamaño profesional (10x15 según tu preferencia)
     fig = plt.figure(figsize=(10, 15))
     ax = fig.add_subplot(111, polar=True)
     ax.set_theta_offset(np.pi / 2)
@@ -62,21 +65,25 @@ if st.button("GENERAR DIAGNÓSTICO", type="primary"):
     plt.yticks([2, 4, 6, 8, 10], ["2","4","6","8","10"], color="grey", size=8)
     plt.ylim(0, 10)
     
-    ax.plot(angulos_plot, valores_plot, color='#1A5276', linewidth=2)
-    ax.fill(angulos_plot, valores_plot, color='#5DADE2', alpha=0.5)
+    ax.plot(angulos_plot, valores_plot, color='#1A5276', linewidth=3)
+    ax.fill(angulos_plot, valores_plot, color='#5DADE2', alpha=0.4)
     
-    plt.title(f"DIAGNÓSTICO: {area_seleccionada.upper()}", size=16, weight='bold', color='#1B4F72', pad=80)
-    plt.suptitle(f"Nombre: {nombre if nombre else 'Anónimo'}  |  Fecha: {fecha}", fontsize=13, y=0.88, style='italic', color='#444444')
+    # Títulos y Metadatos
+    plt.title(f"DIAGNÓSTICO: {area_seleccionada.upper()}", size=18, weight='bold', color='#1B4F72', pad=100)
+    
+    # Subtítulo más completo para colegas
+    info_texto = f"Nombre: {nombre if nombre else 'No indicado'}  |  Coach: {coach if coach else 'Consultor Certificado'}\nFecha de Evaluación: {fecha}"
+    plt.suptitle(info_texto, fontsize=12, y=0.88, style='italic', color='#444444')
 
-    # Mostrar en la web
     st.pyplot(fig)
 
     # Botón de descarga
     img = io.BytesIO()
     fig.savefig(img, format='png', bbox_inches='tight', dpi=300)
     st.download_button(
-        label="📥 DESCARGAR RESULTADOS (PNG)",
+        label="📥 DESCARGAR REPORTE EN ALTA RESOLUCIÓN",
         data=img.getvalue(),
-        file_name=f"Diagnostico_{area_seleccionada}.png",
-        mime="image/png"
+        file_name=f"Diagnostico_{nombre}_{area_seleccionada}.png",
+        mime="image/png",
+        use_container_width=True
     )
