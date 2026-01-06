@@ -55,7 +55,7 @@ if st.button("🚀 GENERAR REPORTE PARA CLIENTE", type="primary", use_container_
     fecha = datetime.now().strftime("%d-%m-%Y")
 
     # Ajuste de tamaño profesional (10x15 según tu preferencia)
-    fig = plt.figure(figsize=(10, 15))
+    fig = plt.figure(figsize=(10, 14))
     ax = fig.add_subplot(111, polar=True)
     ax.set_theta_offset(np.pi / 2)
     ax.set_theta_direction(-1)
