@@ -5,7 +5,7 @@ from datetime import datetime
 import io
 
 # Configuración de la página (Título en la pestaña del navegador)
-st.set_page_config(page_title="Diagnóstico de Claridad", layout="centered")
+st.set_page_config(page_title="Ruedas y visión de Claridad", layout="centered")
 
 # 1. DATOS DE LAS RUEDAS
 ruedas_data = {
