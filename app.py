@@ -21,7 +21,8 @@ ruedas_data = {
 }
 
 # 2. INTERFAZ DE USUARIO (Sidebar)
-st.title("🚀 Sistema de Claridad Fase 1")
+st.title("Sistema de Diagnóstico de 64 Vectores
+")
 st.markdown("---")
 
 col1, col2 = st.columns(2)
