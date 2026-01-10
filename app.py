@@ -84,14 +84,38 @@ if opcion == "🎡 Rueda de la Vida":
                     
                     # Prompt Estratégico Automático
                     prompt_auto = f"""
-                    Eres un Master Coach Estratégico. Analiza esta Rueda de la Vida de {st.session_state.nombre_cliente}:
-                    ÁREA: {area_sel}
-                    PUNTUACIONES: {puntuaciones}
+                    Actúa como un Master Coach Estratégico con enfoque sistémico y conductual.
 
-                    PROPORCIONA objetivamente evita verborrea y redundancia:
-                    1. 🎯 VECTOR PALANCA: Identifica qué punto tiene más potencial de mejora para mover el resto del sistema.
-                    2. 🔍 INSIGHT: Un breve análisis de la estructura actual.
-                    3. ❓ PREGUNTAS PODEROSA: Dos preguntas de Coaching Estratégico basada en estos datos.
+CONTEXTO:
+Cliente: {nombre_cliente}
+Área evaluada: {area}
+Vectores y puntuaciones (1–10): {puntuaciones}
+
+REGLAS ESTRICTAS:
+- No describas los datos ni repitas puntuaciones.
+- No lenguaje motivacional genérico.
+- No consejos largos.
+- Máximo 150 palabras.
+- Responde en bullets claros.
+
+ANÁLISIS OBLIGATORIO:
+1. 🔴 TENSIÓN CENTRAL  
+La incoherencia principal que explica por qué el sistema no avanza de forma equilibrada.
+
+2. 🧱 VECTOR BLOQUEADOR REAL  
+El factor que limita al resto, aunque no sea el más bajo.
+
+3. 🔍 HIPÓTESIS CONDUCTUAL  
+Qué comportamiento observable sostiene esta configuración.
+
+4. 🎯 PALANCA DE ALTO IMPACTO  
+Una única acción concreta que impactaría al menos 2 vectores más en 7–14 días.
+
+5. ⚠️ COSTE OCULTO  
+Qué está perdiendo el cliente por mantener este estado.
+
+6. ❓ PREGUNTA MAESTRA  
+Una pregunta directa que confronte la raíz del bloqueo.
                     """
                     
                     response = model.generate_content(prompt_auto)
@@ -151,18 +175,33 @@ elif opcion == "🤖 Consultoría IA":
                             vak_info = f"{v} (Predominante: {predominancia})"
 
                         prompt_grow = f"""
-                        Actúa como un Master Coach Estratégico experto en metodología GROW+.
-                        CONTEXTO:
-                        - Cliente: {st.session_state.nombre_cliente}
-                        - Rueda {rueda['area']}: {puntuaciones}
-                        - Perfil VAK: {vak_info}
-                        - Desafío: {pregunta_coach}
+                        Actúa como un Coach Estratégico experto en metodología GROW+.
 
-                        ESTRUCTURA DE RESPUESTA:
-                        1. 🔍 REALIDAD (R): Analiza el vector palanca bajo la óptica sensorial {predominancia}.
-                        2. 💡 ESTRATEGIA: Propón un enfoque basado en Coaching Estratégico.
-                        3. ❓ PREGUNTAS CLAVE: 5 preguntas potentes usando predicados {predominancia}.
-                        4. 🎯 VOLUNTAD (W): Una tarea SMART específica.
+CONTEXTO BASE:
+Diagnóstico sistémico previo:
+{diagnostico_generado}
+
+Desafío declarado por el cliente:
+{desafio}
+
+Perfil sensorial predominante: {predominancia}
+
+REGLAS:
+- No repitas el diagnóstico.
+- Lenguaje claro, accionable y concreto.
+- Usa predicados alineados al canal {predominancia}.
+- Máximo 200 palabras.
+- Responde en estructura clara.
+
+ESTRUCTURA GROW+:
+1. 🔍 REALIDAD (R)  
+Cómo se manifiesta hoy esta tensión en decisiones y hábitos diarios.
+
+2. 💡 OPCIONES (O)  
+Tres caminos viables y realistas, con pros y riesgos breves.
+
+3. 🎯 VOLUNTAD (W)  
+Una acción SMART concreta para ejecutar en los próximos 7 días.
                         """
                         
                         response = model.generate_content(prompt_grow)
