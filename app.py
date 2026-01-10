@@ -78,7 +78,7 @@ if opcion == "🎡 Rueda de la Vida":
             with st.spinner("Gemini analizando vectores..."):
                 try:
                     genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-                    model = genai.GenerativeModel('gemini-1.5-flash')
+                    model = genai.GenerativeModel('gemini-2.5-flash')
                     
                     puntuaciones = list(zip(vectores, valores))
                     
