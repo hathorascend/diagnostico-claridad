@@ -8,7 +8,7 @@ import google.generativeai as genai
 # 1. CONFIGURACIÓN DE LA PÁGINA
 st.set_page_config(page_title="Hathora - Suite de Coaching Estratégico", layout="centered")
 
-# --- INICIALIZACIÓN DE ESTADOS (Session State) ---
+# --- INICIALIZACIÓN DE ESTADOS ---
 if 'datos_rueda' not in st.session_state:
     st.session_state.datos_rueda = None
 if 'puntos_vak' not in st.session_state:
@@ -16,65 +16,31 @@ if 'puntos_vak' not in st.session_state:
 if 'nombre_cliente' not in st.session_state:
     st.session_state.nombre_cliente = ""
 
-# 2. NAVEGACIÓN Y CONTROL LATERAL
+# 2. BARRA LATERAL
 with st.sidebar:
     st.title("🛠️ Suite GROW+")
     opcion = st.radio("Herramienta:", ["🎡 Rueda de la Vida", "🧠 Test VAK (Oficial)", "🤖 Consultoría IA"])
     
     st.divider()
-    if st.button("🗑️ Limpiar / Nuevo Cliente"):
-        st.session_state.datos_rueda = None
-        st.session_state.puntos_vak = None
-        st.session_state.nombre_cliente = ""
+    if st.button("🗑️ Nuevo Cliente / Limpiar Datos"):
+        for key in ['datos_rueda', 'puntos_vak', 'nombre_cliente']:
+            st.session_state[key] = None if key != 'nombre_cliente' else ""
         st.rerun()
     
-    st.info("Configurado para Coaching Estratégico")
+    st.info("Especialidad: Coaching Estratégico")
 
-# 3. DATOS DE LAS RUEDAS
+# 3. DATOS DE LAS RUEDAS (64 Vectores)
 ruedas_data = {
     "0. MAPA GENERAL (Macro)": ["Salud", "Economía", "Trabajo", "Des. Personal", "Familia", "Amor", "Amistad", "Diversión"],
-    "2.1 SALUD (Cuerpo y Energía)": ["Sueño/Descanso", "Nutrición", "Energía Diaria", "Movimiento", "Gestión Estrés", "Salud Preventiva", "Escucha Corporal", "Rutinas Sólidas"],
-    "2.2 ECONOMÍA (Finanzas)": ["Nivel Ingresos", "Capacidad Ahorro", "Gestión Deudas", "Control Gasto", "Relación Dinero", "Edu. Finan.", "Ingresos Extra", "Seguridad Finan."],
-    "2.3 TRABAJO (Carrera)": ["Claridad Rol", "Productividad", "Satisfacción", "Progresión", "Clima Laboral", "Autonomía", "Propósito", "Reconocimiento"],
-    "2.4 DESARROLLO PERSONAL": ["Autoconocimiento", "Gestión Emocional", "Disciplina", "Narrativa Interna", "Aprendizaje", "Valores Claros", "Adaptación", "Sentido Evolución"],
-    "2.5 FAMILIA": ["Comunicación", "Tiempo Calidad", "Apoyo Emocional", "Res. Conflictos", "Límites Sanos", "Resp. Compartida", "Presencia Real", "Unión"],
-    "2.6 AMOR (Pareja)": ["Com. Emocional", "Intimidad", "Confianza", "Proyecto Común", "Gestión Conflictos", "Espacio Indiv.", "Afecto", "Satisfacción"],
-    "2.7 AMISTAD (Social)": ["Cantidad Activa", "Profundidad", "Confianza", "Apoyo", "Diversidad", "Influencia (+)", "Frecuencia", "Pertenencia"],
-    "2.8 DIVERSIÓN (Ocio)": ["Tiempo Disfrute", "Desconexión", "Placer Real", "Creatividad", "Risa/Juego", "Variedad", "Cambio Entorno", "Permiso/Culpa"]
+    "2.1 SALUD": ["Sueño", "Nutrición", "Energía", "Movimiento", "Estrés", "Prevención", "Escucha Corporal", "Rutinas"],
+    "2.2 ECONOMÍA": ["Ingresos", "Ahorro", "Deudas", "Control Gasto", "Relación Dinero", "Edu. Finan.", "Extras", "Seguridad"],
+    "2.3 TRABAJO": ["Claridad", "Productividad", "Satisfacción", "Progresión", "Clima", "Autonomía", "Propósito", "Reconocimiento"],
+    "2.4 DESARROLLO PERSONAL": ["Autoconocimiento", "Emociones", "Disciplina", "Narrativa", "Aprendizaje", "Valores", "Adaptación", "Evolución"],
+    "2.5 FAMILIA": ["Comunicación", "Tiempo", "Apoyo", "Conflictos", "Límites", "Responsabilidad", "Presencia", "Unión"],
+    "2.6 AMOR": ["Comunicación", "Intimidad", "Confianza", "Proyecto", "Conflictos", "Espacio", "Afecto", "Satisfacción"],
+    "2.7 AMISTAD": ["Cantidad", "Profundidad", "Confianza", "Apoyo", "Diversidad", "Influencia", "Frecuencia", "Pertenencia"],
+    "2.8 DIVERSIÓN": ["Tiempo", "Desconexión", "Placer", "Creatividad", "Juego", "Variedad", "Entorno", "Culpa"]
 }
-
-# --- LÓGICA DE IA (Función Reutilizable) ---
-def consultar_gemini(prompt_personalizado):
-    try:
-        api_key = st.secrets["GEMINI_API_KEY"]
-        genai.configure(api_key=api_key)
-        model = genai.GenerativeModel('gemini-1.5-flash')
-        
-        # Construcción del contexto dinámico
-        contexto_datos = f"Cliente: {st.session_state.nombre_cliente}\n"
-        if st.session_state.datos_rueda:
-            d = st.session_state.datos_rueda
-            contexto_datos += f"RUEDA {d['area']}: {list(zip(d['vectores'], d['valores']))}\n"
-        if st.session_state.puntos_vak:
-            v = st.session_state.puntos_vak
-            pred = max(v, key=v.get)
-            contexto_datos += f"VAK: A:{v['A']}, V:{v['V']}, C:{v['C']} (Predominante: {pred})\n"
-        
-        prompt_final = f"""
-        Eres un Master Coach Estratégico experto en metodología GROW+.
-        CONTEXTO ACTUAL:
-        {contexto_datos}
-        
-        OBJETIVO:
-        {prompt_personalizado}
-        
-        RESPUESTA: Estructurada, profesional y lista para la sesión.
-        """
-        
-        response = model.generate_content(prompt_final)
-        return response.text
-    except Exception as e:
-        return f"Error: Configura la API Key en los Secrets de Streamlit. ({str(e)})"
 
 # --- SECCIÓN: RUEDA DE LA VIDA ---
 if opcion == "🎡 Rueda de la Vida":
@@ -82,96 +48,88 @@ if opcion == "🎡 Rueda de la Vida":
     
     col1, col2 = st.columns(2)
     with col1:
-        nombre = st.text_input("Nombre del Cliente:", value=st.session_state.nombre_cliente)
-        st.session_state.nombre_cliente = nombre
+        st.session_state.nombre_cliente = st.text_input("Nombre del Cliente:", value=st.session_state.nombre_cliente)
     with col2:
         area_sel = st.selectbox("Área a evaluar:", list(ruedas_data.keys()))
 
     vectores = ruedas_data[area_sel]
-    valores = []
-    
-    st.write(f"### Puntuación: {area_sel}")
-    c1, c2 = st.columns(2)
-    for i, v in enumerate(vectores):
-        with (c1 if i % 2 == 0 else c2):
-            val = st.slider(v, 1, 10, 5, key=f"s_{v}")
-            valores.append(val)
+    valores = [st.slider(v, 1, 10, 5, key=f"s_{v}") for v in vectores]
 
-    if st.button("🚀 GENERAR REPORTE", type="primary", use_container_width=True):
+    if st.button("🚀 GUARDAR Y VISUALIZAR", type="primary", use_container_width=True):
         st.session_state.datos_rueda = {"area": area_sel, "vectores": vectores, "valores": valores}
         
         N = len(vectores)
         angulos = [n / float(N) * 2 * np.pi for n in range(N)]
-        v_plot = valores + [valores[0]]
-        a_plot = angulos + [angulos[0]]
-        
-        fig, ax = plt.subplots(figsize=(8, 10), subplot_kw=dict(polar=True))
+        fig, ax = plt.subplots(figsize=(8, 8), subplot_kw=dict(polar=True))
         ax.set_theta_offset(np.pi / 2)
         ax.set_theta_direction(-1)
-        plt.xticks(angulos, vectores, size=9, weight='bold')
-        ax.plot(a_plot, v_plot, color='#1A5276', linewidth=2)
-        ax.fill(a_plot, v_plot, color='#5DADE2', alpha=0.4)
-        plt.title(f"{area_sel}\nCliente: {nombre}", size=14, pad=20)
+        plt.xticks(angulos, vectores, size=10, weight='bold')
+        ax.plot(angulos + [angulos[0]], valores + [valores[0]], color='#1A5276', linewidth=2)
+        ax.fill(angulos + [angulos[0]], valores + [valores[0]], color='#5DADE2', alpha=0.4)
         st.pyplot(fig)
-        
-        img = io.BytesIO()
-        fig.savefig(img, format='png', bbox_inches='tight')
-        st.download_button("📥 DESCARGAR IMAGEN", img.getvalue(), f"Rueda_{area_sel}.png", "image/png")
 
 # --- SECCIÓN: TEST VAK ---
 elif opcion == "🧠 Test VAK (Oficial)":
-    st.write("# 🧠 Perfil de Comunicación Sensorial")
-    st.caption("Basado en el Test del Instituto Canario de Coaching")
-
-    preguntas = ["1. Juego nuevo", "2. Buscar hotel", "3. Nuevo software", "4. Ortografía", 
-                 "5. Conferencia", "6. Montaje", "7. Jardinería", "8. Memoria", 
-                 "9. Presentación", "10. Aficiones", "11. Nueva habilidad", "12. Enseñar"]
-
+    st.write("# 🧠 Perfil Sensorial VAK")
+    preguntas = ["1. Aprender juego", "2. Buscar hotel", "3. Software", "4. Ortografía", "5. Conferencia", "6. Montaje", "7. Jardinería", "8. Memoria", "9. Presentación", "10. Aficiones", "11. Nueva habilidad", "12. Enseñar"]
+    
     totales = {"A": 0, "V": 0, "C": 0}
     for i, p in enumerate(preguntas):
         with st.expander(f"Situación: {p}"):
-            ca, cv, cc = st.columns(3)
-            with ca: a = st.select_slider("A", options=range(1,8), value=4, key=f"va{i}")
-            with cv: v = st.select_slider("V", options=range(1,8), value=4, key=f"vv{i}")
-            with cc: c = st.select_slider("C", options=range(1,8), value=4, key=f"vc{i}")
+            c1, c2, c3 = st.columns(3)
+            with c1: a = st.select_slider("A", options=range(1,8), value=4, key=f"a{i}")
+            with c2: v = st.select_slider("V", options=range(1,8), value=4, key=f"v{i}")
+            with c3: c = st.select_slider("C", options=range(1,8), value=4, key=f"c{i}")
             totales["A"] += a; totales["V"] += v; totales["C"] += c
 
-    if st.button("📊 GUARDAR RESULTADOS VAK", type="primary", use_container_width=True):
+    if st.button("📊 GUARDAR PERFIL VAK", type="primary", use_container_width=True):
         st.session_state.puntos_vak = totales
-        st.success("Perfil guardado con éxito.")
-        
-        df_vak = pd.DataFrame({"Canal": ["Auditivo", "Visual", "Cinestésico"], "Puntos": [totales["A"], totales["V"], totales["C"]]})
-        st.bar_chart(df_vak.set_index("Canal"))
+        st.success("Perfil guardado.")
+        st.bar_chart(pd.DataFrame(totales.items(), columns=['Canal', 'Puntos']).set_index('Canal'))
 
-# --- SECCIÓN: CONSULTORÍA IA (GROW+) ---
+# --- SECCIÓN: IA (GROW+ PROFESIONAL) ---
 elif opcion == "🤖 Consultoría IA":
-    st.write("# 🤖 Analizador Estratégico GROW+")
+    st.write("# 🤖 Consultoría Estratégica GROW+")
     
+    if "GEMINI_API_KEY" not in st.secrets:
+        st.error("Falta la API Key en los Secrets de Streamlit.")
+        st.stop()
+
     if not st.session_state.datos_rueda and not st.session_state.puntos_vak:
-        st.warning("⚠️ Sin datos. Por favor, completa la Rueda o el VAK primero.")
+        st.warning("Sin datos previos para analizar.")
     else:
-        st.success(f"Analizando a: {st.session_state.nombre_cliente}")
+        pregunta = st.text_area("¿Cuál es el desafío estratégico hoy?", placeholder="Ej: No logra delegar en el trabajo...")
         
-        pregunta_coach = st.text_area("Enfoque de la consulta:", placeholder="Ej: ¿Cómo abordar la falta de disciplina en este cliente?")
-        
-        if st.button("🚀 GENERAR ANÁLISIS ESTRATÉGICO", type="primary"):
-            with st.spinner("Gemini procesando diagnóstico..."):
-                predominancia = "el canal predominante"
-                if st.session_state.puntos_vak:
-                    v = st.session_state.puntos_vak
-                    predominancia = max(v, key=v.get)
-                
-                # EL PROMPT ESTRATÉGICO
-                p_maestro = f"""
-                Analiza al cliente usando GROW+.
-                1. REALIDAD (R): Basado en la rueda, identifica el 'vector palanca' (el que más impacto tiene).
-                2. LENGUAJE: El cliente es {predominancia}. Traduce los insights a predicados sensoriales de este canal.
-                3. PREGUNTAS CLAVE: Genera 5 preguntas poderosas GROW para que el cliente pase a la acción.
-                4. TAREA SUGERIDA: Una acción SMART para esta semana.
-                
-                CONSULTA EXTRA DEL COACH: {pregunta_coach}
-                """
-                
-                resultado = consultar_gemini(p_maestro)
-                st.markdown("---")
-                st.markdown(resultado)
+        if st.button("🧠 GENERAR ANÁLISIS GROW+", type="primary", use_container_width=True):
+            with st.spinner("Analizando con Gemini 1.5 Flash..."):
+                try:
+                    genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+                    # Usamos una llamada más genérica al modelo para evitar el error 404
+                    model = genai.GenerativeModel('models/gemini-1.5-flash')
+                    
+                    # Recopilar contexto
+                    info = f"Cliente: {st.session_state.nombre_cliente}\n"
+                    if st.session_state.datos_rueda:
+                        info += f"Rueda {st.session_state.datos_rueda['area']}: {list(zip(st.session_state.datos_rueda['vectores'], st.session_state.datos_rueda['valores']))}\n"
+                    if st.session_state.puntos_vak:
+                        v = st.session_state.puntos_vak
+                        pred = max(v, key=v.get)
+                        info += f"VAK (Predominante {pred}): {v}\n"
+
+                    # EL PROMPT ESTRATÉGICO GROW+
+                    prompt = f"""
+                    {info}
+                    DESAFÍO: {pregunta}
+
+                    Actúa como un Master Coach Estratégico. Genera:
+                    1. REALIDAD (R): Identifica el 'Vector Palanca' y cómo el perfil sensorial del cliente afecta su bloqueo.
+                    2. LENGUAJE SENSORIAL: Traduce la solución a predicados del canal {pred if st.session_state.puntos_vak else 'del cliente'}.
+                    3. PREGUNTAS CLAVE: 5 preguntas GROW de alto impacto.
+                    4. VOLUNTAD (W): Una tarea táctica específica.
+                    """
+
+                    response = model.generate_content(prompt)
+                    st.divider()
+                    st.markdown(response.text)
+                except Exception as e:
+                    st.error(f"Error de conexión: {str(e)}")
