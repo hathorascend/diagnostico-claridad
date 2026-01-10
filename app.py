@@ -162,8 +162,7 @@ elif opcion == "🤖 Consultoría IA":
                 with st.spinner("Procesando tu consulta..."):
                     try:
                         # Crear el modelo
-                        model = genai.GenerativeModel('gemini-pro')
-                        
+        model = genai.GenerativeModel('gemini-1.5-flash')                        
                         # Crear el prompt con contexto
                         prompt_contexto = f"""
                         Eres un asistente experto en coaching estratégico y desarrollo personal.
@@ -183,10 +182,8 @@ elif opcion == "🤖 Consultoría IA":
                         st.write("### 🎯 Respuesta de Gemini:")
                         st.write(response.text)
                         
-                    except Exception as e:
-                        st.error(f"Error al conectar con Gemini: {str(e)}")
-            else:
-                st.warning("Por favor, escribe una consulta.")
+                except Exception as e:
+                                        st.error(f"Error al conectar con Gemini: {str(e)}")
                 
     except Exception as e:
         st.warning("⚠️ API Key no configurada")
