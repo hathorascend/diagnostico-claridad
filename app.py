@@ -135,7 +135,7 @@ elif opcion == "🤖 Consultoría IA":
                 with st.spinner("Gemini aplicando metodología GROW+..."):
                     try:
                         genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-                        model = genai.GenerativeModel('gemini-1.5-flash')
+                        model = genai.GenerativeModel('gemini-2.5-flash')
                         
                         # Recopilar todo el contexto disponible
                         rueda = st.session_state.datos_rueda
