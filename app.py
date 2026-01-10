@@ -88,10 +88,10 @@ if opcion == "🎡 Rueda de la Vida":
                     ÁREA: {area_sel}
                     PUNTUACIONES: {puntuaciones}
 
-                    PROPORCIONA:
+                    PROPORCIONA objetivamente evita verborrea y redundancia:
                     1. 🎯 VECTOR PALANCA: Identifica qué punto tiene más potencial de mejora para mover el resto del sistema.
                     2. 🔍 INSIGHT: Un breve análisis de la estructura actual.
-                    3. ❓ PREGUNTA PODEROSA: Una pregunta de Coaching Estratégico basada en estos datos.
+                    3. ❓ PREGUNTAS PODEROSA: Dos preguntas de Coaching Estratégico basada en estos datos.
                     """
                     
                     response = model.generate_content(prompt_auto)
