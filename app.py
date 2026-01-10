@@ -4,6 +4,7 @@ import numpy as np
 from datetime import datetime
 import io
 import pandas as pd
+import google.generativeai as genai
 
 # 1. CONFIGURACIÓN DE LA PÁGINA
 st.set_page_config(page_title="Hathora - Suite de Coaching", layout="centered")
@@ -134,5 +135,80 @@ elif opcion == "🧠 Test VAK (Oficial)":
 # --- SECCIÓN: IA ---
 elif opcion == "🤖 Consultoría IA":
     st.write("# 🤖 Asistente Estratégico para el Coach")
-    st.info("Conecta Gemini para analizar los resultados de las herramientas anteriores.")
-    st.text_input("Introduce tu API Key de Google (Gemini):", type="password")
+    st.info("Utiliza IA para analizar resultados de tus herramientas de coaching.")
+    
+    # Configurar API key desde secrets
+    try:
+        api_key = st.secrets["GEMINI_API_KEY"]
+        genai.configure(api_key=api_key)
+        
+        st.success("✅ Conectado a Gemini AI")
+        
+        # Selector de contexto
+        contexto = st.selectbox(
+            "Selecciona el contexto de análisis:",
+            ["Rueda de la Vida", "Test VAK", "Consulta General"]
+        )
+        
+        # Área de texto para la pregunta
+        pregunta = st.text_area(
+            "Escribe tu consulta o pega resultados para analizar:",
+            height=150,
+            placeholder="Ejemplo: Analiza estos resultados de la Rueda de la Vida..."
+        )
+        
+        if st.button("💬 Consultar a Gemini", type="primary", use_container_width=True):
+            if pregunta.strip():
+                with st.spinner("Procesando tu consulta..."):
+                    try:
+                        # Crear el modelo
+                        model = genai.GenerativeModel('gemini-pro')
+                        
+                        # Crear el prompt con contexto
+                        prompt_contexto = f"""
+                        Eres un asistente experto en coaching estratégico y desarrollo personal.
+                        Contexto de la consulta: {contexto}
+                        
+                        Consulta del coach:
+                        {pregunta}
+                        
+                        Proporciona un análisis profesional, insights accionables y recomendaciones específicas.
+                        """
+                        
+                        # Generar respuesta
+                        response = model.generate_content(prompt_contexto)
+                        
+                        # Mostrar respuesta
+                        st.divider()
+                        st.write("### 🎯 Respuesta de Gemini:")
+                        st.write(response.text)
+                        
+                    except Exception as e:
+                        st.error(f"Error al conectar con Gemini: {str(e)}")
+            else:
+                st.warning("Por favor, escribe una consulta.")
+                
+    except Exception as e:
+        st.warning("⚠️ API Key no configurada")
+        st.info("""
+        **Para configurar la API de Gemini de forma segura:**
+        
+        1. Crea una carpeta `.streamlit` en tu proyecto
+        2. Dentro, crea un archivo `secrets.toml`
+        3. Agrega: `GEMINI_API_KEY = "tu-api-key-aqui"`
+        4. Asegúrate de que `.streamlit/` esté en tu `.gitignore`
+        
+        **Para Streamlit Cloud:**
+        - Ve a Settings > Secrets en tu app
+        - Agrega: `GEMINI_API_KEY = "tu-api-key-aqui"`
+        """)
+        
+        # Mostrar formulario de entrada manual solo en caso de error
+        with st.expander("🔐 Configuración Manual (Solo para testing local)"):
+            manual_key = st.text_input(
+                "API Key temporal (no recomendado):",
+                type="password",
+                help="Esta key NO se guardará. Usa secrets.toml para producción."
+            )
+            if manual_key and st.button("Usar temporalmente"):
+                st.warning("Recuerda configurar secrets.toml para mayor seguridad")
