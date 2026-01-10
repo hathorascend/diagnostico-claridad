@@ -281,14 +281,14 @@ VAK_ITEMS = [
 def build_pdf_bytes() -> bytes:
     styles = getSampleStyleSheet()
     buf = io.BytesIO()
-    doc = SimpleDocTemplate(buf, pagesize=A4, title="Registro de Sesión Hathora")
+    doc = SimpleDocTemplate(buf, pagesize=A4, title="Registro de Sesión BeCoach")
     story = []
 
     def P(text: str) -> Paragraph:
         return Paragraph(text, styles["BodyText"])
 
     # Portada simple
-    story.append(Paragraph("Hathora — Registro de Sesión", styles["Title"]))
+    story.append(Paragraph("BeCocach — Registro de Sesión", styles["Title"]))
     story.append(Spacer(1, 10))
 
     story.append(P(f"<b>Coach:</b> {st.session_state.nombre_coach or '—'}"))
@@ -367,7 +367,7 @@ def build_pdf_bytes() -> bytes:
 # SIDEBAR
 # -------------------------
 with st.sidebar:
-    st.title("🛠️ Hathora GROW+")
+    st.title("🛠️ BeCoaCh GROW+")
     st.caption("Interfaz para sesión real + registro PDF.")
 
     st.divider()
@@ -404,7 +404,7 @@ chips_html = " ".join([f"<span class='h-pill'>{c}</span>" for c in chips]) or "<
 st.markdown(
     f"""
 <div class="h-card">
-  <div class="h-kpi">🜂 Hathora — Registro de Sesión</div>
+  <div class="h-kpi">🜂 BeCoach — Registro de Sesión</div>
   <div class="h-small">
     Coach: <b>{st.session_state.nombre_coach or "—"}</b> ·
     Cliente: <b>{st.session_state.nombre_cliente or "—"}</b> ·
@@ -691,7 +691,7 @@ SALIDA (bullets, en este orden exacto)
 
     with c2:
         st.subheader("Export rápido (TXT)")
-        export_text = f"""Hathora — Registro de Sesión
+        export_text = f"""BeCoach — Registro de Sesión
 Fecha: {datetime.now().strftime('%d/%m/%Y %H:%M')}
 
 Coach: {st.session_state.nombre_coach}
