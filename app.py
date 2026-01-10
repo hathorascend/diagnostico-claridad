@@ -15,6 +15,8 @@ if 'puntos_vak' not in st.session_state:
     st.session_state.puntos_vak = None
 if 'nombre_cliente' not in st.session_state:
     st.session_state.nombre_cliente = ""
+if 'diagnostico_generado' not in st.session_state:
+    st.session_state.diagnostico_generado = None
 
 # 2. BARRA LATERAL (NAVEGACIÓN)
 with st.sidebar:
@@ -26,6 +28,7 @@ with st.sidebar:
         st.session_state.datos_rueda = None
         st.session_state.puntos_vak = None
         st.session_state.nombre_cliente = ""
+        st.session_state.diagnostico_generado = None
         st.rerun()
     
     st.info("Especialidad: Coaching Estratégico & GROW+")
@@ -49,7 +52,10 @@ if opcion == "🎡 Rueda de la Vida":
     
     col1, col2 = st.columns(2)
     with col1:
-        st.session_state.nombre_cliente = st.text_input("Nombre del Cliente:", value=st.session_state.nombre_cliente)
+        st.session_state.nombre_cliente = st.text_input(
+            "Nombre del Cliente:",
+            value=st.session_state.nombre_cliente
+        )
     with col2:
         area_sel = st.selectbox("Área a evaluar:", list(ruedas_data.keys()))
 
@@ -57,6 +63,7 @@ if opcion == "🎡 Rueda de la Vida":
     valores = [st.slider(v, 1, 10, 5, key=f"s_{v}") for v in vectores]
 
     if st.button("🚀 GENERAR RUEDA Y ANÁLISIS IA", type="primary", use_container_width=True):
+        # Guardar datos de la rueda en sesión
         st.session_state.datos_rueda = {"area": area_sel, "vectores": vectores, "valores": valores}
         
         # --- 1. GENERAR GRÁFICO ---
@@ -82,13 +89,13 @@ if opcion == "🎡 Rueda de la Vida":
                     
                     puntuaciones = list(zip(vectores, valores))
                     
-                    # Prompt Estratégico Automático
+                    # Prompt Estratégico Automático (corregido con variables existentes)
                     prompt_auto = f"""
-                    Actúa como un Master Coach Estratégico con enfoque sistémico y conductual.
+Actúa como un Master Coach Estratégico con enfoque sistémico y conductual.
 
 CONTEXTO:
-Cliente: {nombre_cliente}
-Área evaluada: {area}
+Cliente: {st.session_state.nombre_cliente}
+Área evaluada: {area_sel}
 Vectores y puntuaciones (1–10): {puntuaciones}
 
 REGLAS ESTRICTAS:
@@ -116,10 +123,15 @@ Qué está perdiendo el cliente por mantener este estado.
 
 6. ❓ PREGUNTA MAESTRA  
 Una pregunta directa que confronte la raíz del bloqueo.
-                    """
+"""
                     
                     response = model.generate_content(prompt_auto)
-                    st.info(response.text)
+                    diagnostico_texto = response.text
+                    st.info(diagnostico_texto)
+
+                    # Guardar diagnóstico en sesión para Consultoría IA
+                    st.session_state.diagnostico_generado = diagnostico_texto
+
                 except Exception as e:
                     st.error(f"Error en análisis IA: {e}")
         else:
@@ -128,21 +140,32 @@ Una pregunta directa que confronte la raíz del bloqueo.
 # --- SECCIÓN: TEST VAK ---
 elif opcion == "🧠 Test VAK (Oficial)":
     st.write("# 🧠 Perfil Sensorial VAK")
-    preguntas = ["1. Juego nuevo", "2. Buscar hotel", "3. Software", "4. Ortografía", "5. Conferencia", "6. Montaje", "7. Jardinería", "8. Memoria", "9. Presentación", "10. Aficiones", "11. Nueva habilidad", "12. Enseñar"]
+    preguntas = [
+        "1. Juego nuevo", "2. Buscar hotel", "3. Software", "4. Ortografía",
+        "5. Conferencia", "6. Montaje", "7. Jardinería", "8. Memoria",
+        "9. Presentación", "10. Aficiones", "11. Nueva habilidad", "12. Enseñar"
+    ]
     
     totales = {"A": 0, "V": 0, "C": 0}
     for i, p in enumerate(preguntas):
         with st.expander(f"Situación: {p}"):
             c1, c2, c3 = st.columns(3)
-            with c1: a = st.select_slider("A", options=range(1,8), value=4, key=f"a{i}")
-            with c2: v = st.select_slider("V", options=range(1,8), value=4, key=f"v{i}")
-            with c3: c = st.select_slider("C", options=range(1,8), value=4, key=f"c{i}")
-            totales["A"] += a; totales["V"] += v; totales["C"] += c
+            with c1:
+                a = st.select_slider("A", options=range(1, 8), value=4, key=f"a{i}")
+            with c2:
+                v = st.select_slider("V", options=range(1, 8), value=4, key=f"v{i}")
+            with c3:
+                c = st.select_slider("C", options=range(1, 8), value=4, key=f"c{i}")
+            totales["A"] += a
+            totales["V"] += v
+            totales["C"] += c
 
     if st.button("📊 GUARDAR PERFIL VAK", type="primary", use_container_width=True):
         st.session_state.puntos_vak = totales
         st.success("Perfil sensorial guardado con éxito.")
-        st.bar_chart(pd.DataFrame(totales.items(), columns=['Canal', 'Puntos']).set_index('Canal'))
+        st.bar_chart(
+            pd.DataFrame(totales.items(), columns=['Canal', 'Puntos']).set_index('Canal')
+        )
 
 # --- SECCIÓN: CONSULTORÍA IA (ANÁLISIS PROFUNDO GROW+) ---
 elif opcion == "🤖 Consultoría IA":
@@ -152,7 +175,12 @@ elif opcion == "🤖 Consultoría IA":
         st.warning("⚠️ Debes generar una Rueda de la Vida primero para tener contexto.")
     else:
         st.success(f"Analizando contexto de: {st.session_state.nombre_cliente}")
-        pregunta_coach = st.text_area("¿Cuál es el desafío o consulta específica?", placeholder="Ej: No logra establecer rutinas de sueño...")
+        
+        # Pregunta del cliente
+        pregunta_coach = st.text_area(
+            "¿Cuál es el desafío o consulta específica?",
+            placeholder="Ej: No logra establecer rutinas de sueño..."
+        )
         
         if st.button("🚀 GENERAR HOJA DE RUTA GROW+", type="primary", use_container_width=True):
             if "GEMINI_API_KEY" in st.secrets:
@@ -174,8 +202,13 @@ elif opcion == "🤖 Consultoría IA":
                             predominancia = mapa.get(pred_code, pred_code)
                             vak_info = f"{v} (Predominante: {predominancia})"
 
+                        # Recuperar diagnóstico previo y desafío
+                        diagnostico_generado = st.session_state.diagnostico_generado or "No disponible"
+                        desafio = pregunta_coach or "No especificado"
+
+                        # Prompt GROW+ (manteniendo tu lógica)
                         prompt_grow = f"""
-                        Actúa como un Coach Estratégico experto en metodología GROW+.
+Actúa como un Coach Estratégico experto en metodología GROW+.
 
 CONTEXTO BASE:
 Diagnóstico sistémico previo:
@@ -202,7 +235,7 @@ Tres caminos viables y realistas, con pros y riesgos breves.
 
 3. 🎯 VOLUNTAD (W)  
 Una acción SMART concreta para ejecutar en los próximos 7 días.
-                        """
+"""
                         
                         response = model.generate_content(prompt_grow)
                         st.divider()
