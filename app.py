@@ -105,7 +105,7 @@ elif opcion == "🤖 Consultoría IA":
                 try:
                     genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
                     # Usamos una llamada más genérica al modelo para evitar el error 404
-                    model = genai.GenerativeModel('models/gemini-1.5-flash')
+                    model = genai.GenerativeModel('gemini-2.5-flash')
                     
                     # Recopilar contexto
                     info = f"Cliente: {st.session_state.nombre_cliente}\n"
