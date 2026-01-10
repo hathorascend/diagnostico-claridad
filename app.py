@@ -1,5 +1,5 @@
 # app.py
-# Hathora — Suite de Coaching Estratégico (UI Pro + VAK 24 + Copiloto + PDF)
+# BeCoach — Suite de Coaching Estratégico (UI Pro + VAK 24 + Copiloto + PDF)
 # Requisitos: streamlit, matplotlib, numpy, pandas, google-generativeai, reportlab
 
 import io
@@ -20,9 +20,9 @@ from reportlab.lib import colors
 # CONFIG
 # -------------------------
 st.set_page_config(
-    page_title="Hathora - Suite de Coaching Estratégico",
+    page_title="BeCoach - Suite de Coaching Estratégico",
     layout="wide",
-    page_icon="🜂",
+    page_icon="BC",
 )
 
 # -------------------------
