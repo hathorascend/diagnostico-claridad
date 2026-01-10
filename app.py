@@ -159,7 +159,6 @@ elif opcion == "🤖 Consultoría IA":
         
         if st.button("💬 Consultar a Gemini", type="primary", use_container_width=True):
             if pregunta.strip():
-                with st.spinner("Procesando tu consulta..."):
                         # Crear el modelo
         model = genai.GenerativeModel('gemini-1.5-flash')                        
                         # Crear el prompt con contexto
